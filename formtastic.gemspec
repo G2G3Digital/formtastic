@@ -25,7 +25,7 @@ Gem::Specification.new do |s|
      "generators/form/templates/view__form.html.haml",
      "generators/formtastic/formtastic_generator.rb",
      "generators/formtastic/templates/formtastic.css",
-     "generators/formtastic/templates/formtastic.rb",
+     "generators/formtastic/templates/formtastic_config.rb",
      "generators/formtastic/templates/formtastic_changes.css",
      "generators/formtastic_stylesheets/formtastic_stylesheets_generator.rb",
      "lib/formtastic.rb",
@@ -140,3 +140,4 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec_tag_matchers>, [">= 1.0.0"])
   end
 end
+
