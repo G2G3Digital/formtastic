@@ -121,9 +121,6 @@ describe 'SemanticFormBuilder#commit_button' do
   end
 
   describe 'label' do
-    before do
-      ::Post.stub!(:human_name).and_return('Post')
-    end
 
     # No object
     describe 'when used without object' do
@@ -143,7 +140,7 @@ describe 'SemanticFormBuilder#commit_button' do
           end
           
           after do
-            ::I18n.backend.store_translations :en, :formtastic => {:submit => nil}
+            ::I18n.backend.reload!
           end
           
           it 'should render an input with default I18n-localized label (fallback)' do
@@ -160,15 +157,24 @@ describe 'SemanticFormBuilder#commit_button' do
              :formtastic => {
                  :actions => {
                    :submit => 'Custom Submit',
-                   :post => {
-                     :submit => 'Custom Submit {{model}}'
-                    }
                   }
                }
            ::Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true
          end
 
+         after do
+           ::I18n.backend.reload!
+         end
+
          it 'should render an input with localized label (I18n)' do
+           ::I18n.backend.store_translations :en,
+             :formtastic => {
+                 :actions => {
+                   :post => {
+                     :submit => 'Custom Submit {{model}}'
+                    }
+                  }
+               }
            semantic_form_for(:post, :url => 'http://example.com') do |builder|
              concat(builder.commit_button)
            end
@@ -176,14 +182,6 @@ describe 'SemanticFormBuilder#commit_button' do
          end
 
          it 'should render an input with anoptional localized label (I18n) - if first is not set' do
-           ::I18n.backend.store_translations :en,
-             :formtastic => {
-                 :actions => {
-                   :post => {
-                     :submit => nil
-                    }
-                  }
-               }
            semantic_form_for(:post, :url => 'http://example.com') do |builder|
              concat(builder.commit_button)
            end
@@ -216,7 +214,7 @@ describe 'SemanticFormBuilder#commit_button' do
           end
 
           after do
-            ::I18n.backend.store_translations :en, :formtastic => {:create => nil}
+            ::I18n.backend.reload!
           end
 
           it 'should render an input with default I18n-localized label (fallback)' do
@@ -233,19 +231,24 @@ describe 'SemanticFormBuilder#commit_button' do
               :formtastic => {
                   :actions => {
                     :create => 'Custom Create',
-                    :post => {
-                      :create => 'Custom Create {{model}}'
-                     }
                    }
                 }
             ::Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true
           end
           
           after do
-            ::I18n.backend.store_translations :en, :formtastic => nil
+            ::I18n.backend.reload!
           end
 
           it 'should render an input with localized label (I18n)' do
+            ::I18n.backend.store_translations :en,
+              :formtastic => {
+                  :actions => {
+                    :post => {
+                      :create => 'Custom Create {{model}}'
+                     }
+                   }
+                }
             semantic_form_for(@new_post) do |builder|
               concat(builder.commit_button)
             end
@@ -253,20 +256,10 @@ describe 'SemanticFormBuilder#commit_button' do
           end
 
           it 'should render an input with anoptional localized label (I18n) - if first is not set' do
-            ::I18n.backend.store_translations :en,
-              :formtastic => {
-                  :actions => {
-                    :post => {
-                      :create => nil
-                     }
-                   }
-                }
             semantic_form_for(@new_post) do |builder|
               concat(builder.commit_button)
             end
-            output_buffer.should have_tag(%Q{li.commit input[@value="Custom Create"][@class~="create"]})
-            ::I18n.backend.store_translations :en, :formtastic => nil
-            
+            output_buffer.should have_tag(%Q{li.commit input[@value="Custom Create"][@class~="create"]})            
           end
 
         end
@@ -295,7 +288,7 @@ describe 'SemanticFormBuilder#commit_button' do
           end
           
           after do
-            ::I18n.backend.store_translations :en, :formtastic => {:update => nil}
+            ::I18n.backend.reload!
           end
 
           it 'should render an input with default I18n-localized label (fallback)' do
@@ -312,15 +305,24 @@ describe 'SemanticFormBuilder#commit_button' do
               :formtastic => {
                   :actions => {
                     :update => 'Custom Save',
-                    :post => {
-                      :update => 'Custom Save {{model}}'
-                     }
                    }
                 }
             ::Formtastic::SemanticFormBuilder.i18n_lookups_by_default = true
           end
 
+          after do
+            ::I18n.backend.reload!
+          end
+          
           it 'should render an input with localized label (I18n)' do
+            ::I18n.backend.store_translations :en,
+              :formtastic => {
+                  :actions => {
+                    :post => {
+                      :update => 'Custom Save {{model}}'
+                     }
+                   }
+                }
             semantic_form_for(@new_post) do |builder|
               concat(builder.commit_button)
             end
@@ -328,14 +330,6 @@ describe 'SemanticFormBuilder#commit_button' do
           end
 
           it 'should render an input with anoptional localized label (I18n) - if first is not set' do
-            ::I18n.backend.store_translations :en,
-              :formtastic => {
-                  :actions => {
-                    :post => {
-                      :update => nil
-                     }
-                   }
-                }
             semantic_form_for(@new_post) do |builder|
               concat(builder.commit_button)
             end
@@ -351,7 +345,7 @@ describe 'SemanticFormBuilder#commit_button' do
   describe 'when the model is two words' do
     before do
       output_buffer = ''
-      class ::UserPost; def id; end; end
+      class ::UserPost; def id; end; def self.human_name; "Userpost"; end; end # Rails does crappy human_name
       @new_user_post = ::UserPost.new
       
       @new_user_post.stub!(:new_record?).and_return(true)
@@ -365,5 +359,5 @@ describe 'SemanticFormBuilder#commit_button' do
     end
     
   end
-  
+    
 end

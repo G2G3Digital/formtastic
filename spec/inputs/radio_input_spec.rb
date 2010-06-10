@@ -23,10 +23,13 @@ describe 'radio input' do
     it_should_apply_error_logic_for_input_type(:radio)
     it_should_use_the_collection_when_provided(:radio, 'input')
     
+    it 'should generate a legend containing a label with text for the input' do
+      output_buffer.should have_tag('form li fieldset legend.label label')
+      output_buffer.should have_tag('form li fieldset legend.label label', /Author/)
+    end
     
-    it 'should generate a legend - classified as a label - containing label text for the input' do
-      output_buffer.should have_tag('form li fieldset legend.label')
-      output_buffer.should have_tag('form li fieldset legend.label', /Author/)
+    it 'should not link the label within the legend to any input' do
+      output_buffer.should_not have_tag('form li fieldset legend label[@for]')
     end
 
     it 'should generate an ordered list with a list item for each choice' do
@@ -73,6 +76,16 @@ describe 'radio input' do
 
         output_buffer.should have_tag("form li fieldset ol li label input[@checked='checked']")
       end
+      
+      it "should not contain invalid HTML attributes" do
+        
+        semantic_form_for(@new_post) do |builder|
+          concat(builder.input(:author, :as => :radio))
+        end
+        
+        output_buffer.should_not have_tag("form li fieldset ol li input[@find_options]")
+      end
+      
     end
 
     describe 'and no object is given' do
@@ -117,9 +130,11 @@ describe 'radio input' do
     describe "no selected items" do
       before do
         @new_post.stub!(:author_ids).and_return(nil)
-
-        semantic_form_for(@new_post) do |builder|
-          concat(builder.input(:authors, :as => :radio, :selected => nil))
+        
+        with_deprecation_silenced do
+          semantic_form_for(@new_post) do |builder|
+            concat(builder.input(:authors, :as => :radio, :selected => nil))
+          end
         end
       end
 
@@ -131,9 +146,10 @@ describe 'radio input' do
     describe "single selected item" do
       before do
         @new_post.stub!(:author_ids).and_return(nil)
-  
-        semantic_form_for(@new_post) do |builder|
-          concat(builder.input(:authors, :as => :radio, :selected => @fred.id))
+        with_deprecation_silenced do
+          semantic_form_for(@new_post) do |builder|
+            concat(builder.input(:authors, :as => :radio, :selected => @fred.id))
+          end
         end
       end
 
@@ -144,6 +160,27 @@ describe 'radio input' do
       end
     end
 
+  end
+  
+  describe "with i18n of the legend label" do
+    
+    before do
+      ::I18n.backend.store_translations :en, :formtastic => { :labels => { :post => { :authors => "Translated!" }}}
+
+      @new_post.stub!(:author_ids).and_return(nil)
+      semantic_form_for(@new_post) do |builder|
+        concat(builder.input(:authors, :as => :radio))
+      end
+    end
+    
+    after do
+      ::I18n.backend.reload!
+    end
+    
+    it "should do foo" do
+      output_buffer.should have_tag("legend.label label", /Translated/)
+    end
+    
   end
 
 end
